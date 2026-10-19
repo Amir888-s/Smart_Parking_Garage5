@@ -139,6 +139,9 @@ Note: GitHub links only become real after you push this repository to **your own
 - [Allocation UML](docs/uml/allocation-family.png)
 - [Editable UML source](docs/uml/smart-parking-garage.puml)
 - [Commit evidence](docs/COMMITS.md)
+- [Test/build evidence](docs/TEST_EVIDENCE.md)
+- [Printable report (PDF)](docs/Smart_Parking_Garage_Report.pdf)
+- [Editable report (Word)](docs/Smart_Parking_Garage_Report.docx)
 
 ## Submission checklist
 

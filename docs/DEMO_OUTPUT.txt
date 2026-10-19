@@ -1,0 +1,19 @@
+=== SMART PARKING GARAGE: STRATEGY PATTERN ===
+Input: 120 min, regular member, sensor = 55%
+PRICING - SAME INPUT, THREE ALGORITHMS
+HourlyPricing: 1000 KZT
+DailyCapPricing: 1000 KZT
+DemandPricing: 1600 KZT
+ADDITIONAL 9-HOUR CASE: hourly=4500, cap=3000, demand=5100
+MANUAL pricing = DemandPricing
+Manual result: 1600 KZT
+AUTOMATIC pricing = HourlyPricing, total = 1000 KZT
+SENSOR CHANGED TO 92%: DemandPricing, total = 2400 KZT
+ALLOCATION - SAME INPUT, THREE ALGORITHMS
+NearestEntranceStrategy: L1-01
+LowestLevelStrategy: G-03
+LeastCrowdedLevelStrategy: L2-01
+MANUAL allocation = G-03
+AUTOMATIC at 92% = LeastCrowdedLevelStrategy, spot = L2-01
+SENSOR BACK TO 55%, automatic allocation = LowestLevelStrategy, spot = G-03
+RUNTIME SWAP: context instances stayed the same throughout.
