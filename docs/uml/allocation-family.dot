@@ -1,0 +1,23 @@
+digraph UML {
+graph [rankdir=LR, bgcolor="white", pad="0.35", nodesep="0.35", ranksep="0.68", fontname="DejaVu Sans", labeljust="l"]; node [shape=record, style="rounded,filled", fontname="DejaVu Sans", fontsize=10, color="#BCD0E0", fillcolor="#F7FAFD", penwidth=1.35]; edge [fontname="DejaVu Sans", fontsize=9, color="#778DA7", arrowsize=.65];
+
+"SpotAllocationStrategy" [label="{«interface» SpotAllocationStrategy|+ choose(request, spaces): Optional<ParkingSpot>}",fillcolor="#DFF2FD",color="#2196C0"];
+"NearestEntranceStrategy" [label="{NearestEntranceStrategy|+ choose(request, spaces)}"];
+"LowestLevelStrategy" [label="{LowestLevelStrategy|+ choose(request, spaces)}"];
+"LeastCrowdedLevelStrategy" [label="{LeastCrowdedLevelStrategy|+ choose(request, spaces)}"];
+"AllocationContext" [label="{AllocationContext|- strategy: SpotAllocationStrategy|+ AllocationContext(strategy)\l+ setStrategy(strategy)\l+ allocate(request, spaces)\l}",fillcolor="#E3F4E8",color="#32985A"];
+"AllocationSelector" [label="{AllocationSelector|- source: OccupancySource|+ select(request): SpotAllocationStrategy}",fillcolor="#FFF1DB",color="#D39B35"];
+"OccupancySource" [label="{«interface» OccupancySource|+ currentOccupancyRatio(): double}",fillcolor="#DFF2FD",color="#2196C0"];
+"ParkingRequest" [label="{«record» ParkingRequest|+ stayMinutes\l+ membership\l+ charging / accessibility\l}",fillcolor="#F2EDFA"];
+"ParkingSpot" [label="{«record» ParkingSpot|+ id / level / distance\l+ occupied / features\l+ isSuitableFor(request)\l}",fillcolor="#F2EDFA"];
+"NearestEntranceStrategy" -> "SpotAllocationStrategy" [arrowhead=empty,style=dashed];
+"LowestLevelStrategy" -> "SpotAllocationStrategy" [arrowhead=empty,style=dashed];
+"LeastCrowdedLevelStrategy" -> "SpotAllocationStrategy" [arrowhead=empty,style=dashed];
+"AllocationContext" -> "SpotAllocationStrategy" [label="delegates"];
+"AllocationSelector" -> "SpotAllocationStrategy" [label="selects"];
+"AllocationSelector" -> "OccupancySource" [label="reads"];
+"SpotAllocationStrategy" -> "ParkingSpot" [style=dotted];
+"SpotAllocationStrategy" -> "ParkingRequest" [style=dotted];
+"ParkingSpot" -> "ParkingRequest" [style=dotted,label="eligibility"];
+
+}

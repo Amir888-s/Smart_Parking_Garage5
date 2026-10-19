@@ -1,0 +1,72 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+package "domain" {
+ enum Membership { REGULAR; VIP }
+ class ParkingRequest <<record>> { +stayMinutes: long
+ +membership: Membership
+ +electricCharging: boolean
+ +accessibleSpace: boolean }
+ class ParkingSpot <<record>> { +id: String
+ +level: int
+ +distanceMeters: int
+ +chargingAvailable: boolean
+ +accessible: boolean
+ +occupied: boolean
+ +isSuitableFor(request): boolean }
+}
+package "sensor" {
+ interface OccupancySource { +currentOccupancyRatio(): double }
+ class SimulatedOccupancySource { -ratio: double
+ +setOccupancyRatio(ratio): void }
+ OccupancySource <|.. SimulatedOccupancySource
+}
+package "pricing" {
+ interface PricingStrategy { +calculate(request): BigDecimal }
+ class HourlyPricing
+ class DailyCapPricing
+ class DemandPricing { -occupancySource: OccupancySource }
+ class PricingContext { -strategy: PricingStrategy
+ +setStrategy(strategy): void
+ +quote(request): BigDecimal }
+ class PricingSelector { +select(request): PricingStrategy }
+ class ParkingPriceEngine { +quote(request, plan): BigDecimal }
+ enum PricingPlan { HOURLY; DAILY_CAP; DEMAND }
+ PricingStrategy <|.. HourlyPricing
+ PricingStrategy <|.. DailyCapPricing
+ PricingStrategy <|.. DemandPricing
+ PricingContext --> PricingStrategy
+ PricingSelector --> PricingStrategy
+ ParkingPriceEngine --> PricingContext
+ ParkingPriceEngine --> PricingPlan
+ DemandPricing --> OccupancySource
+ PricingSelector --> OccupancySource
+}
+package "allocation" {
+ interface SpotAllocationStrategy { +choose(request, spaces): Optional<ParkingSpot> }
+ class NearestEntranceStrategy
+ class LowestLevelStrategy
+ class LeastCrowdedLevelStrategy
+ class AllocationContext { -strategy: SpotAllocationStrategy
+ +setStrategy(strategy): void
+ +allocate(request, spaces): Optional<ParkingSpot> }
+ class AllocationSelector { +select(request): SpotAllocationStrategy }
+ SpotAllocationStrategy <|.. NearestEntranceStrategy
+ SpotAllocationStrategy <|.. LowestLevelStrategy
+ SpotAllocationStrategy <|.. LeastCrowdedLevelStrategy
+ AllocationContext --> SpotAllocationStrategy
+ AllocationSelector --> SpotAllocationStrategy
+ AllocationSelector --> OccupancySource
+}
+class SmartParkingDemo { +main(args): void }
+SmartParkingDemo --> PricingContext
+SmartParkingDemo --> PricingSelector
+SmartParkingDemo --> AllocationContext
+SmartParkingDemo --> AllocationSelector
+PricingStrategy ..> ParkingRequest
+SpotAllocationStrategy ..> ParkingRequest
+SpotAllocationStrategy ..> ParkingSpot
+ParkingRequest --> Membership
+@enduml

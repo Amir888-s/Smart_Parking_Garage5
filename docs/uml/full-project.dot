@@ -1,0 +1,68 @@
+digraph UML {
+graph [rankdir=LR, bgcolor="white", pad="0.35", nodesep="0.35", ranksep="0.68", fontname="DejaVu Sans", labeljust="l"]; node [shape=record, style="rounded,filled", fontname="DejaVu Sans", fontsize=10, color="#BCD0E0", fillcolor="#F7FAFD", penwidth=1.35]; edge [fontname="DejaVu Sans", fontsize=9, color="#778DA7", arrowsize=.65];
+subgraph cluster_pricing {
+ label="FAMILY 1 — PRICING";color="#D6E5F0";bgcolor="#FAFCFE";
+
+"PricingStrategy" [label="{«interface» PricingStrategy|+ calculate(request): BigDecimal}",fillcolor="#DFF2FD",color="#2196C0"];
+"HourlyPricing" [label="{HourlyPricing|+ calculate(request)}"];
+"DailyCapPricing" [label="{DailyCapPricing|+ calculate(request)}"];
+"DemandPricing" [label="{DemandPricing|- source: OccupancySource|+ calculate(request)}"];
+"PricingContext" [label="{PricingContext|- strategy: PricingStrategy|+ PricingContext(strategy)\l+ setStrategy(strategy)\l+ quote(request)\l}",fillcolor="#E3F4E8",color="#32985A"];
+"PricingSelector" [label="{PricingSelector|- source: OccupancySource|+ select(request): PricingStrategy}",fillcolor="#FFF1DB",color="#D39B35"];
+"ParkingPriceEngine" [label="{ParkingPriceEngine|- strategies: Map|- context: PricingContext|+ quote(request, plan)}"];
+
+
+
+"PricingPlan" [label="{«enum» PricingPlan|HOURLY\lDAILY_CAP\lDEMAND\l}",fillcolor="#F2EDFA"];
+"HourlyPricing" -> "PricingStrategy" [arrowhead=empty,style=dashed];
+"DailyCapPricing" -> "PricingStrategy" [arrowhead=empty,style=dashed];
+"DemandPricing" -> "PricingStrategy" [arrowhead=empty,style=dashed];
+"PricingContext" -> "PricingStrategy" [label="delegates"];
+"PricingSelector" -> "PricingStrategy" [label="selects"];
+"ParkingPriceEngine" -> "PricingContext";
+"ParkingPriceEngine" -> "PricingPlan";
+"DemandPricing" -> "OccupancySource" [label="reads"];
+"PricingSelector" -> "OccupancySource";
+
+"PricingStrategy" -> "ParkingRequest" [style=dotted,arrowhead=vee];
+
+}
+subgraph cluster_allocation {
+label="FAMILY 2 — ALLOCATION";color="#D6E5F0";bgcolor="#FAFCFE";
+
+"SpotAllocationStrategy" [label="{«interface» SpotAllocationStrategy|+ choose(request, spaces): Optional<ParkingSpot>}",fillcolor="#DFF2FD",color="#2196C0"];
+"NearestEntranceStrategy" [label="{NearestEntranceStrategy|+ choose(request, spaces)}"];
+"LowestLevelStrategy" [label="{LowestLevelStrategy|+ choose(request, spaces)}"];
+"LeastCrowdedLevelStrategy" [label="{LeastCrowdedLevelStrategy|+ choose(request, spaces)}"];
+"AllocationContext" [label="{AllocationContext|- strategy: SpotAllocationStrategy|+ AllocationContext(strategy)\l+ setStrategy(strategy)\l+ allocate(request, spaces)\l}",fillcolor="#E3F4E8",color="#32985A"];
+"AllocationSelector" [label="{AllocationSelector|- source: OccupancySource|+ select(request): SpotAllocationStrategy}",fillcolor="#FFF1DB",color="#D39B35"];
+
+
+"ParkingSpot" [label="{«record» ParkingSpot|+ id / level / distance\l+ occupied / features\l+ isSuitableFor(request)\l}",fillcolor="#F2EDFA"];
+"NearestEntranceStrategy" -> "SpotAllocationStrategy" [arrowhead=empty,style=dashed];
+"LowestLevelStrategy" -> "SpotAllocationStrategy" [arrowhead=empty,style=dashed];
+"LeastCrowdedLevelStrategy" -> "SpotAllocationStrategy" [arrowhead=empty,style=dashed];
+"AllocationContext" -> "SpotAllocationStrategy" [label="delegates"];
+"AllocationSelector" -> "SpotAllocationStrategy" [label="selects"];
+"AllocationSelector" -> "OccupancySource" [label="reads"];
+"SpotAllocationStrategy" -> "ParkingSpot" [style=dotted];
+"SpotAllocationStrategy" -> "ParkingRequest" [style=dotted];
+"ParkingSpot" -> "ParkingRequest" [style=dotted,label="eligibility"];
+
+}
+subgraph cluster_shared {
+ label="SHARED DOMAIN / SENSOR";color="#E0D6F1";bgcolor="#FCFAFF";
+"OccupancySource" [label="{«interface» OccupancySource|+ currentOccupancyRatio(): double}",fillcolor="#DFF2FD",color="#2196C0"];
+"SimulatedOccupancySource" [label="{SimulatedOccupancySource|- ratio: double|+ setOccupancyRatio(ratio)}"];
+"ParkingRequest" [label="{«record» ParkingRequest|+ stayMinutes / membership\l+ charging / accessibility\l}",fillcolor="#F2EDFA"];
+"Membership" [label="{«enum» Membership|REGULAR\lVIP\l}",fillcolor="#F2EDFA"];
+"ParkingSpot" [label="{«record» ParkingSpot|+ id / level / distance\l+ occupied / features\l+ isSuitableFor(request)\l}",fillcolor="#F2EDFA"];
+"SimulatedOccupancySource" -> "OccupancySource" [arrowhead=empty,style=dashed];
+"ParkingRequest" -> "Membership";
+}
+"SmartParkingDemo" [label="{SmartParkingDemo|+ main(args): void}",fillcolor="#E3F4E8"];
+"SmartParkingDemo" -> "PricingContext";
+"SmartParkingDemo" -> "AllocationContext";
+"SmartParkingDemo" -> "PricingSelector";
+"SmartParkingDemo" -> "AllocationSelector";
+}

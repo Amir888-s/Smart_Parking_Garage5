@@ -3,36 +3,25 @@ package edu.aitu.parking.pricing;
 import edu.aitu.parking.domain.ParkingRequest;
 import edu.aitu.parking.sensor.OccupancySource;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.util.Map;
 import java.util.Objects;
 
-/** BEFORE refactoring: pricing algorithms are mixed into one class. */
+/** Stable public pricing entry point retained across the refactoring commits. */
 public final class ParkingPriceEngine {
-    private final OccupancySource occupancySource;
+    private final Map<PricingPlan, PricingStrategy> strategies;
+    private final PricingContext context;
 
     public ParkingPriceEngine(OccupancySource occupancySource) {
-        this.occupancySource = Objects.requireNonNull(occupancySource);
+        Objects.requireNonNull(occupancySource, "occupancy source");
+        this.strategies = Map.of(
+                PricingPlan.HOURLY, new HourlyPricing(),
+                PricingPlan.DAILY_CAP, new DailyCapPricing(),
+                PricingPlan.DEMAND, new DemandPricing(occupancySource));
+        this.context = new PricingContext(strategies.get(PricingPlan.HOURLY));
     }
 
     public BigDecimal quote(ParkingRequest request, PricingPlan plan) {
-        Objects.requireNonNull(request); Objects.requireNonNull(plan);
-        long minutes = request.stayMinutes();
-        if (plan == PricingPlan.HOURLY) {
-            return BigDecimal.valueOf(((minutes + 59) / 60) * 500L);
-        } else if (plan == PricingPlan.DAILY_CAP) {
-            long price = 0;
-            while (minutes > 0) {
-                long block = Math.min(minutes, 1440);
-                price += Math.min(((block + 59) / 60) * 500L, 3000L);
-                minutes -= block;
-            }
-            return BigDecimal.valueOf(price);
-        } else {
-            BigDecimal base = BigDecimal.valueOf(600L + ((minutes + 29) / 30) * 250L);
-            double ratio = occupancySource.currentOccupancyRatio();
-            BigDecimal factor = ratio >= .85 ? new BigDecimal("1.50")
-                    : ratio >= .70 ? new BigDecimal("1.20") : BigDecimal.ONE;
-            return base.multiply(factor).setScale(0, RoundingMode.HALF_UP);
-        }
+        context.setStrategy(Objects.requireNonNull(strategies.get(Objects.requireNonNull(plan)), "pricing plan"));
+        return context.quote(request);
     }
 }

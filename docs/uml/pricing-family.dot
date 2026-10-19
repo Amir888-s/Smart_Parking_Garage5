@@ -1,0 +1,27 @@
+digraph UML {
+graph [rankdir=LR, bgcolor="white", pad="0.35", nodesep="0.35", ranksep="0.68", fontname="DejaVu Sans", labeljust="l"]; node [shape=record, style="rounded,filled", fontname="DejaVu Sans", fontsize=10, color="#BCD0E0", fillcolor="#F7FAFD", penwidth=1.35]; edge [fontname="DejaVu Sans", fontsize=9, color="#778DA7", arrowsize=.65];
+
+"PricingStrategy" [label="{«interface» PricingStrategy|+ calculate(request): BigDecimal}",fillcolor="#DFF2FD",color="#2196C0"];
+"HourlyPricing" [label="{HourlyPricing|+ calculate(request)}"];
+"DailyCapPricing" [label="{DailyCapPricing|+ calculate(request)}"];
+"DemandPricing" [label="{DemandPricing|- source: OccupancySource|+ calculate(request)}"];
+"PricingContext" [label="{PricingContext|- strategy: PricingStrategy|+ PricingContext(strategy)\l+ setStrategy(strategy)\l+ quote(request)\l}",fillcolor="#E3F4E8",color="#32985A"];
+"PricingSelector" [label="{PricingSelector|- source: OccupancySource|+ select(request): PricingStrategy}",fillcolor="#FFF1DB",color="#D39B35"];
+"ParkingPriceEngine" [label="{ParkingPriceEngine|- strategies: Map|- context: PricingContext|+ quote(request, plan)}"];
+"OccupancySource" [label="{«interface» OccupancySource|+ currentOccupancyRatio(): double}",fillcolor="#DFF2FD",color="#2196C0"];
+"SimulatedOccupancySource" [label="{SimulatedOccupancySource|- ratio: double|+ setOccupancyRatio(ratio)}"];
+"ParkingRequest" [label="{«record» ParkingRequest|+ stayMinutes\l+ membership\l+ charging / accessibility\l}", fillcolor="#F2EDFA"];
+"PricingPlan" [label="{«enum» PricingPlan|HOURLY\lDAILY_CAP\lDEMAND\l}",fillcolor="#F2EDFA"];
+"HourlyPricing" -> "PricingStrategy" [arrowhead=empty,style=dashed];
+"DailyCapPricing" -> "PricingStrategy" [arrowhead=empty,style=dashed];
+"DemandPricing" -> "PricingStrategy" [arrowhead=empty,style=dashed];
+"PricingContext" -> "PricingStrategy" [label="delegates"];
+"PricingSelector" -> "PricingStrategy" [label="selects"];
+"ParkingPriceEngine" -> "PricingContext";
+"ParkingPriceEngine" -> "PricingPlan";
+"DemandPricing" -> "OccupancySource" [label="reads"];
+"PricingSelector" -> "OccupancySource";
+"SimulatedOccupancySource" -> "OccupancySource" [arrowhead=empty,style=dashed];
+"PricingStrategy" -> "ParkingRequest" [style=dotted,arrowhead=vee];
+
+}
